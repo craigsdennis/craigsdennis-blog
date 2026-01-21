@@ -1,8 +1,15 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import FormattedDate from '../components/FormattedDate.astro';
+import { SITE_DESCRIPTION, SITE_TITLE, SOCIAL_LINKS } from '../consts';
+
+// Get latest 3 posts
+const posts = (await getCollection('blog'))
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+	.slice(0, 3);
 ---
 
 <!doctype html>
@@ -13,37 +20,529 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<!-- Hero Section -->
+			<section class="hero">
+				<div class="hero-content">
+					<p class="greeting">
+						<span class="prompt">$</span> whoami
+					</p>
+					<h1>
+						Hey, I'm <span class="highlight">Craig</span><span class="cursor"></span>
+					</h1>
+					<p class="tagline">
+						Developer educator building at the intersection of 
+						<span class="tag">AI</span>, 
+						<span class="tag">code</span>, and 
+						<span class="tag">creative tech</span>.
+					</p>
+					<p class="bio">
+						I make complex things approachable. Currently hosting 
+						<a href={SOCIAL_LINKS.aiavenue} target="_blank" rel="noopener">AI Avenue</a> 
+						and teaching developers how to build with AI.
+					</p>
+					
+					<div class="cta-group">
+						<a href="/blog" class="cta-primary">
+							<span class="cta-icon">></span>
+							Read the blog
+						</a>
+						<a href={SOCIAL_LINKS.aiavenue} target="_blank" rel="noopener" class="cta-secondary">
+							Watch AI Avenue
+						</a>
+					</div>
+				</div>
+				
+				<div class="hero-visual">
+					<div class="terminal-window">
+						<div class="terminal-header">
+							<span class="terminal-dot red"></span>
+							<span class="terminal-dot yellow"></span>
+							<span class="terminal-dot green"></span>
+							<span class="terminal-title">~/craigsdennis</span>
+						</div>
+						<div class="terminal-body">
+							<div class="terminal-line">
+								<span class="prompt">$</span> cat interests.txt
+							</div>
+							<div class="terminal-output">
+								<span class="cyan">AI/ML</span> - Teaching machines (and humans)<br/>
+								<span class="amber">Music</span> - Making noise with code<br/>
+								<span class="pink">Creative Tech</span> - Breaking things beautifully
+							</div>
+							<div class="terminal-line">
+								<span class="prompt">$</span> <span class="cursor-inline"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			
+			<!-- Latest Posts Section -->
+			{posts.length > 0 && (
+				<section class="latest-posts">
+					<div class="section-header">
+						<h2>Latest Posts</h2>
+						<a href="/blog" class="view-all">View all &rarr;</a>
+					</div>
+					
+					<ul class="posts-grid stagger">
+						{posts.map((post) => (
+							<li class="post-card card">
+								<a href={`/blog/${post.id}/`}>
+									<span class="post-date">
+										<FormattedDate date={post.data.pubDate} />
+									</span>
+									<h3 class="post-title">{post.data.title}</h3>
+									<p class="post-description">{post.data.description}</p>
+									<span class="read-more">Read more &rarr;</span>
+								</a>
+							</li>
+						))}
+					</ul>
+				</section>
+			)}
+			
+			<!-- Connect Section -->
+			<section class="connect">
+				<h2>Let's Connect</h2>
+				<p>Find me on the internet as <code>@craigsdennis</code> basically everywhere.</p>
+				<div class="connect-links">
+					<a href={SOCIAL_LINKS.github} target="_blank" rel="noopener" class="connect-link">
+						<span class="connect-icon">gh</span>
+						<span class="connect-label">GitHub</span>
+					</a>
+					<a href={SOCIAL_LINKS.youtube} target="_blank" rel="noopener" class="connect-link">
+						<span class="connect-icon">yt</span>
+						<span class="connect-label">YouTube</span>
+					</a>
+					<a href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener" class="connect-link">
+						<span class="connect-icon">x</span>
+						<span class="connect-label">Twitter</span>
+					</a>
+					<a href={SOCIAL_LINKS.aiavenue} target="_blank" rel="noopener" class="connect-link featured">
+						<span class="connect-icon">ai</span>
+						<span class="connect-label">AI Avenue</span>
+					</a>
+				</div>
+			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	main {
+		max-width: 1000px;
+	}
+	
+	/* ===== HERO SECTION ===== */
+	.hero {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--space-xl);
+		align-items: center;
+		min-height: 70vh;
+		padding: var(--space-xl) 0;
+	}
+	
+	.greeting {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		color: var(--text-muted);
+		margin-bottom: var(--space-sm);
+	}
+	
+	.greeting .prompt {
+		color: var(--accent-cyan);
+		font-weight: bold;
+	}
+	
+	.hero h1 {
+		font-size: clamp(2.5rem, 6vw, 4rem);
+		margin-bottom: var(--space-md);
+		background: none;
+		-webkit-text-fill-color: var(--text-primary);
+	}
+	
+	.hero h1 .highlight {
+		background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-amber) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+	
+	.cursor {
+		display: inline-block;
+		width: 0.5em;
+		height: 0.9em;
+		background: var(--accent-amber);
+		margin-left: 4px;
+		animation: blink 1s step-end infinite;
+		vertical-align: baseline;
+	}
+	
+	@keyframes blink {
+		0%, 50% { opacity: 1; }
+		51%, 100% { opacity: 0; }
+	}
+	
+	.tagline {
+		font-size: 1.25rem;
+		color: var(--text-secondary);
+		margin-bottom: var(--space-md);
+		line-height: 1.5;
+	}
+	
+	.tagline .tag {
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+		padding: 0.1em 0.4em;
+		background: var(--bg-tertiary);
+		border-radius: 4px;
+		color: var(--accent-cyan);
+	}
+	
+	.bio {
+		color: var(--text-secondary);
+		margin-bottom: var(--space-lg);
+	}
+	
+	.bio a {
+		color: var(--accent-amber);
+		font-weight: 600;
+	}
+	
+	.bio a:hover {
+		color: var(--accent-pink);
+	}
+	
+	.cta-group {
+		display: flex;
+		gap: var(--space-md);
+		flex-wrap: wrap;
+	}
+	
+	.cta-primary, .cta-secondary {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		font-weight: 600;
+		padding: 0.75em 1.5em;
+		border-radius: 8px;
+		text-decoration: none;
+		transition: all var(--transition-fast);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+	}
+	
+	.cta-primary {
+		background: var(--accent-cyan);
+		color: var(--bg-primary);
+	}
+	
+	.cta-primary:hover {
+		background: var(--text-primary);
+		box-shadow: var(--glow-cyan);
+		transform: translateY(-2px);
+	}
+	
+	.cta-icon {
+		opacity: 0.7;
+	}
+	
+	.cta-secondary {
+		background: transparent;
+		color: var(--accent-amber);
+		border: 1px solid var(--accent-amber-dim);
+	}
+	
+	.cta-secondary:hover {
+		background: rgba(240, 160, 0, 0.1);
+		border-color: var(--accent-amber);
+		box-shadow: var(--glow-amber);
+	}
+	
+	/* Terminal Visual */
+	.hero-visual {
+		display: flex;
+		justify-content: center;
+	}
+	
+	.terminal-window {
+		width: 100%;
+		max-width: 400px;
+		background: var(--bg-secondary);
+		border: 1px solid var(--border-color);
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: var(--box-shadow-lg);
+	}
+	
+	.terminal-header {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 12px 16px;
+		background: var(--bg-tertiary);
+		border-bottom: 1px solid var(--border-color);
+	}
+	
+	.terminal-dot {
+		width: 12px;
+		height: 12px;
+		border-radius: 50%;
+	}
+	
+	.terminal-dot.red { background: #ff5f56; }
+	.terminal-dot.yellow { background: #ffbd2e; }
+	.terminal-dot.green { background: #27ca40; }
+	
+	.terminal-title {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		margin-left: auto;
+	}
+	
+	.terminal-body {
+		padding: 20px;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		line-height: 1.8;
+	}
+	
+	.terminal-line {
+		color: var(--text-secondary);
+		margin-bottom: 8px;
+	}
+	
+	.terminal-line .prompt {
+		color: var(--accent-cyan);
+		font-weight: bold;
+		margin-right: 8px;
+	}
+	
+	.terminal-output {
+		color: var(--text-muted);
+		padding-left: 1em;
+		margin-bottom: 12px;
+	}
+	
+	.terminal-output .cyan { color: var(--accent-cyan); }
+	.terminal-output .amber { color: var(--accent-amber); }
+	.terminal-output .pink { color: var(--accent-pink); }
+	
+	.cursor-inline {
+		display: inline-block;
+		width: 0.6em;
+		height: 1em;
+		background: var(--accent-amber);
+		animation: blink 1s step-end infinite;
+		vertical-align: text-bottom;
+	}
+	
+	/* ===== LATEST POSTS SECTION ===== */
+	.latest-posts {
+		padding: var(--space-xl) 0;
+	}
+	
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: var(--space-lg);
+	}
+	
+	.section-header h2 {
+		margin: 0;
+	}
+	
+	.view-all {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		color: var(--accent-cyan);
+	}
+	
+	.view-all:hover {
+		color: var(--accent-amber);
+	}
+	
+	.posts-grid {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: var(--space-lg);
+	}
+	
+	.post-card {
+		padding: 0;
+	}
+	
+	.post-card a {
+		display: block;
+		padding: var(--space-lg);
+		text-decoration: none;
+		height: 100%;
+	}
+	
+	.post-date {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+	
+	.post-title {
+		font-size: 1.25rem;
+		margin: var(--space-sm) 0;
+		color: var(--text-primary);
+		transition: color var(--transition-fast);
+	}
+	
+	.post-card:hover .post-title {
+		color: var(--accent-cyan);
+	}
+	
+	.post-description {
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+		margin-bottom: var(--space-md);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	
+	.read-more {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--accent-cyan-dim);
+		transition: color var(--transition-fast);
+	}
+	
+	.post-card:hover .read-more {
+		color: var(--accent-cyan);
+	}
+	
+	/* ===== CONNECT SECTION ===== */
+	.connect {
+		padding: var(--space-xl) 0;
+		text-align: center;
+	}
+	
+	.connect h2 {
+		margin-bottom: var(--space-sm);
+	}
+	
+	.connect > p {
+		color: var(--text-secondary);
+		margin-bottom: var(--space-lg);
+	}
+	
+	.connect code {
+		background: var(--bg-tertiary);
+		color: var(--accent-cyan);
+	}
+	
+	.connect-links {
+		display: flex;
+		justify-content: center;
+		gap: var(--space-md);
+		flex-wrap: wrap;
+	}
+	
+	.connect-link {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-xs);
+		padding: var(--space-md) var(--space-lg);
+		background: var(--bg-secondary);
+		border: 1px solid var(--border-color);
+		border-radius: 12px;
+		text-decoration: none;
+		transition: all var(--transition-base);
+		min-width: 100px;
+	}
+	
+	.connect-link:hover {
+		border-color: var(--accent-cyan-dim);
+		transform: translateY(-4px);
+		box-shadow: var(--glow-cyan);
+	}
+	
+	.connect-link.featured {
+		border-color: var(--accent-amber-dim);
+		background: rgba(240, 160, 0, 0.05);
+	}
+	
+	.connect-link.featured:hover {
+		border-color: var(--accent-amber);
+		box-shadow: var(--glow-amber);
+	}
+	
+	.connect-icon {
+		font-family: var(--font-mono);
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: var(--accent-cyan);
+	}
+	
+	.connect-link.featured .connect-icon {
+		color: var(--accent-amber);
+	}
+	
+	.connect-label {
+		font-size: 0.8rem;
+		color: var(--text-secondary);
+	}
+	
+	/* ===== RESPONSIVE ===== */
+	@media (max-width: 900px) {
+		.hero {
+			grid-template-columns: 1fr;
+			text-align: center;
+			min-height: auto;
+			padding: var(--space-lg) 0;
+		}
+		
+		.hero-content {
+			order: 1;
+		}
+		
+		.hero-visual {
+			order: 2;
+		}
+		
+		.cta-group {
+			justify-content: center;
+		}
+		
+		.terminal-window {
+			max-width: 350px;
+		}
+	}
+	
+	@media (max-width: 720px) {
+		.tagline {
+			font-size: 1.1rem;
+		}
+		
+		.cta-primary, .cta-secondary {
+			width: 100%;
+			justify-content: center;
+		}
+		
+		.connect-links {
+			gap: var(--space-sm);
+		}
+		
+		.connect-link {
+			min-width: 80px;
+			padding: var(--space-sm) var(--space-md);
+		}
+	}
+</style>
