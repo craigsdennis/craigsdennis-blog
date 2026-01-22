@@ -1,20 +1,21 @@
 ---
 name: blog-post
-description: Draft and publish blog posts for craigsdennis.dev. Creates feature branches with preview URLs, then merges to main when ready to publish.
+description: Draft and publish blog posts for an Astro blog. Creates feature branches with preview URLs, then merges to main when ready to publish.
 ---
 
 # Blog Post Skill
 
-This skill helps draft and publish blog posts for craigsdennis.dev. It supports two workflows:
+This skill helps draft and publish blog posts for an Astro-based blog. It supports two workflows:
 
-1. **Draft** - Create a new blog post on a feature branch with automatic preview deployment
-2. **Publish** - Merge an approved draft into main and deploy to production
+1. **Draft** - Create a new blog post on a feature branch, push to origin for automatic preview deployment
+2. **Publish** - Merge an approved draft branch into main and push to deploy to production
 
 ## Environment Variables
 
-The skill uses these optional environment variables:
+Check `.dev.vars.example` for available environment variables:
 - `REPLICATE_API_TOKEN` - If set, enables AI-generated hero images via Replicate
-- `BLOG_PREVIEW_URL_PATTERN` - Preview URL pattern (default: `{branch}-craigsdennis-blog.craigsdennis.workers.dev`)
+- `BLOG_PREVIEW_URL_PATTERN` - Preview URL pattern with `{branch}` placeholder (e.g., `{branch}-my-blog.pages.dev`)
+- `BLOG_PRODUCTION_URL` - Production site URL (e.g., `https://myblog.dev`)
 
 ## Drafting a New Blog Post
 
@@ -36,11 +37,16 @@ Convert the title to a URL-friendly slug:
 - Remove special characters
 - Example: "My Awesome Post!" -> `my-awesome-post`
 
-### 3. Create Feature Branch
+### 3. Create Feature Branch with Git
+
+IMPORTANT: Always use git to create and push branches.
 
 ```bash
+# Ensure we're on main and up to date
 git checkout main
 git pull origin main
+
+# Create the feature branch
 git checkout -b blog/<slug>
 ```
 
@@ -59,51 +65,72 @@ heroImage: '../../assets/<slug>-header.webp'  # Only if hero image is generated
 <Content goes here>
 ```
 
-**Date Format**: Use format like `Jan 20 2026` (matches existing posts).
+**Date Format**: Use format like `Jan 20 2026`.
 
 **Content Style**: 
 - Use markdown with headers, lists, code blocks as appropriate
-- Keep Craig's conversational, educator-friendly tone
+- Write in a conversational, educator-friendly tone
 - Include code examples when relevant
 - Break up content with subheadings
 
 ### 5. Generate Hero Image (Optional)
 
-If `REPLICATE_API_TOKEN` is available and user wants a hero image:
+If the Replicate MCP tools are available (check for `replicate_*` tools) and user wants a hero image:
 
-1. Use the `replicate_create_models_predictions` tool with `black-forest-labs/flux-schnell`
-2. Save the output image to `src/assets/<slug>-header.webp`
-3. Include the `heroImage` frontmatter field
+1. Use the `replicate_create_models_predictions` tool to generate an image:
+   - **model_owner**: `black-forest-labs`
+   - **model_name**: `flux-schnell`
+   - **input**: `{"prompt": "<your prompt>", "aspect_ratio": "16:9"}`
+   - **Prefer**: `wait` (to wait for the result)
+
+2. The prediction response will contain an `output` array with image URL(s)
+
+3. Download the generated image and save it to `src/assets/<slug>-header.webp`:
+   ```bash
+   curl -o src/assets/<slug>-header.webp "<output_url>"
+   ```
+
+4. Include the `heroImage` frontmatter field pointing to `../../assets/<slug>-header.webp`
 
 **Prompt Tips for Hero Images**:
-- Match the retro-terminal aesthetic of the site
-- Include style keywords: "synthwave", "retro", "neon", "80s", "terminal aesthetic"
-- Be specific about composition and colors
+- Be specific about style, composition, and colors
+- Consider the blog's aesthetic (check `src/styles/global.css` for design cues)
+- Example: "Minimalist illustration of a robot writing code, soft gradients, modern tech aesthetic"
 
-### 6. Commit and Push
+### 6. Commit and Push with Git
+
+IMPORTANT: Always commit and push the branch to origin.
 
 ```bash
+# Stage the new files
 git add src/content/blog/<slug>.md
 git add src/assets/<slug>-header.webp  # If hero image was generated
+
+# Commit with a descriptive message
 git commit -m "Draft: <Title>"
+
+# Push the branch to origin (this triggers preview deployment)
 git push -u origin blog/<slug>
 ```
 
 ### 7. Provide Preview URL
 
-Tell the user their preview URL:
+After pushing, construct the preview URL using the `BLOG_PREVIEW_URL_PATTERN` environment variable.
+
+Replace `{branch}` with the branch name, converting `/` to `-`:
+- Branch: `blog/my-awesome-post`
+- URL branch segment: `blog-my-awesome-post`
+
+Tell the user:
 ```
-Preview URL: https://<branch>-craigsdennis-blog.craigsdennis.workers.dev/blog/<slug>
+Your draft has been pushed to origin.
+
+Preview URL: https://<preview-url-pattern>/blog/<slug>
+
+Note: It may take 1-2 minutes for the preview deployment to complete.
+
+When you're ready to publish, just ask me to publish this post.
 ```
-
-Where `<branch>` is the branch name with `/` replaced by `-` (e.g., `blog-my-awesome-post`).
-
-**Note**: It may take 1-2 minutes for Cloudflare to build and deploy the preview.
-
-Inform the user:
-- The preview is live at the URL above
-- They can review and request changes
-- When ready, use this skill again to publish
 
 ## Publishing a Draft
 
@@ -111,25 +138,36 @@ When the user wants to publish a drafted post:
 
 ### 1. Identify the Draft
 
-Ask which draft to publish if not specified. List available draft branches:
+If the user doesn't specify which draft, list available draft branches:
 ```bash
+git fetch origin
 git branch -r | grep 'origin/blog/'
 ```
 
-### 2. Merge to Main
+### 2. Merge to Main with Git
+
+IMPORTANT: Use git to merge and push.
 
 ```bash
+# Ensure main is up to date
 git checkout main
 git pull origin main
+
+# Merge the draft branch
 git merge origin/blog/<slug> --no-edit
+
+# Push to deploy to production
 git push origin main
 ```
 
-### 3. Clean Up (Optional)
+### 3. Clean Up Branch
 
-Ask if the user wants to delete the draft branch:
+After successful merge, offer to delete the draft branch:
 ```bash
+# Delete remote branch
 git push origin --delete blog/<slug>
+
+# Delete local branch
 git branch -d blog/<slug>
 ```
 
@@ -137,8 +175,9 @@ git branch -d blog/<slug>
 
 Tell the user:
 ```
-Published! Your post is now live at:
-https://craigsdennis.dev/blog/<slug>
+Published! Your post has been merged to main and pushed.
+
+Production URL: <BLOG_PRODUCTION_URL>/blog/<slug>
 
 Deployment typically completes within 1-2 minutes.
 ```
@@ -148,6 +187,7 @@ Deployment typically completes within 1-2 minutes.
 - Blog posts: `src/content/blog/<slug>.md`
 - Hero images: `src/assets/<slug>-header.webp`
 - Site constants: `src/consts.ts`
+- Content schema: `src/content.config.ts`
 
 ## Frontmatter Schema
 
@@ -157,7 +197,7 @@ Required fields:
 - `pubDate` (string) - Publication date like "Jan 20 2026"
 
 Optional fields:
-- `heroImage` (string) - Relative path to hero image
+- `heroImage` (string) - Relative path to hero image: `../../assets/<filename>.webp`
 - `updatedDate` (string) - Last updated date
 
 ## Example Blog Post
@@ -170,24 +210,42 @@ pubDate: 'Jan 22 2026'
 heroImage: '../../assets/building-with-ai-apis-header.webp'
 ---
 
-Introduction paragraph here...
+Introduction paragraph that hooks the reader...
 
-## First Section
+## Why This Matters
 
-Content with **bold** and `code` formatting.
+Context and background for your topic.
 
-### Subsection
+## Getting Started
 
-- Bullet points
-- More points
-
-## Code Examples
+Step-by-step instructions with code examples:
 
 \`\`\`javascript
 const example = "code here";
 \`\`\`
 
+## Key Takeaways
+
+- Main point one
+- Main point two
+- Main point three
+
 ## Conclusion
 
-Wrap up the post.
+Wrap up and call to action.
 ```
+
+## Git Workflow Summary
+
+**Draft:**
+1. `git checkout main && git pull origin main`
+2. `git checkout -b blog/<slug>`
+3. Create/edit files
+4. `git add . && git commit -m "Draft: <Title>"`
+5. `git push -u origin blog/<slug>`
+
+**Publish:**
+1. `git checkout main && git pull origin main`
+2. `git merge origin/blog/<slug> --no-edit`
+3. `git push origin main`
+4. `git push origin --delete blog/<slug>` (cleanup)

@@ -1,5 +1,9 @@
+# Replicate API token for AI image generation
 REPLICATE_API_TOKEN="your-token-here"
 
-# Blog preview URL pattern - used by blog-post skill
-# The {branch} placeholder is replaced with the branch name (slashes become dashes)
-BLOG_PREVIEW_URL_PATTERN="{branch}-craigsdennis-blog.craigsdennis.workers.dev"
+# Blog post skill configuration
+# Preview URL pattern - {branch} is replaced with branch name (slashes become dashes)
+BLOG_PREVIEW_URL_PATTERN="{branch}-my-blog.pages.dev"
+
+# Production site URL
+BLOG_PRODUCTION_URL="https://myblog.dev"
