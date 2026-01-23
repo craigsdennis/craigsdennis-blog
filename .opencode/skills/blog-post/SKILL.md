@@ -5,31 +5,57 @@ description: Draft and publish blog posts for an Astro blog. Creates feature bra
 
 # Blog Post Skill
 
-This skill helps draft and publish blog posts for an Astro-based blog. It supports two workflows:
+This skill drafts and publishes blog posts for an Astro-based blog. It operates autonomously without asking questions.
 
-1. **Draft** - Create a new blog post on a feature branch, push to origin for automatic preview deployment
-2. **Publish** - Merge an approved draft branch into main and push to deploy to production
+**Two workflows:**
+1. **Draft** - Create a new blog post on a feature branch, push to origin for preview
+2. **Publish** - Merge an approved draft branch into main and push to production
 
 ## Environment Variables
 
-Check `.dev.vars.example` for available environment variables:
-- `REPLICATE_API_TOKEN` - If set, enables AI-generated hero images via Replicate
-- `BLOG_PREVIEW_URL_PATTERN` - Preview URL pattern with `{branch}` placeholder (e.g., `{branch}-my-blog.pages.dev`)
-- `BLOG_PRODUCTION_URL` - Production site URL (e.g., `https://myblog.dev`)
+Check `.dev.vars.example` for configuration:
+- `REPLICATE_API_TOKEN` - Enables AI-generated hero images via Replicate
+- `BLOG_PREVIEW_URL_PATTERN` - Preview URL pattern with `{branch}` placeholder
+- `BLOG_PRODUCTION_URL` - Production site URL
 
 ## Drafting a New Blog Post
 
-When the user wants to draft a new blog post:
+IMPORTANT: Do NOT ask the user questions. Make decisions autonomously. The user will review and provide feedback on the draft.
 
-### 1. Gather Information
+### 1. Study Existing Content
 
-Ask the user for:
-- **Title** (required) - The blog post title
-- **Description** (required) - A brief summary for SEO/social sharing (1-2 sentences)
-- **Topic/Content** (required) - What the post should be about, key points to cover
-- **Hero Image** (optional) - Whether to generate a hero image, and if so, what style/prompt
+Before writing, read existing blog posts in `src/content/blog/` to understand:
+- Writing style and tone
+- How posts are structured
+- Level of technical depth
+- Use of code examples, links, and formatting
 
-### 2. Generate Slug
+Match the voice and style of the existing content.
+
+### 2. Parse the User's Request
+
+Extract from the user's message:
+- **Topic** - What the post should be about
+- **Title** - Infer a compelling title if not provided
+- **Description** - Generate a 1-2 sentence SEO summary
+
+If the topic involves current tools, APIs, libraries, or services, use `webfetch` to get the latest information from official documentation or websites. Do not rely on potentially outdated training data.
+
+### 3. Research with WebFetch
+
+Before writing, gather current information:
+- Fetch official documentation for any tools/APIs mentioned
+- Verify current syntax, features, and best practices
+- Check for recent updates or changes
+
+Example:
+```
+If writing about "Replicate API", fetch:
+- https://replicate.com/docs
+- Relevant model pages for current parameters
+```
+
+### 4. Generate Slug
 
 Convert the title to a URL-friendly slug:
 - Lowercase
@@ -37,215 +63,156 @@ Convert the title to a URL-friendly slug:
 - Remove special characters
 - Example: "My Awesome Post!" -> `my-awesome-post`
 
-### 3. Create Feature Branch with Git
-
-IMPORTANT: Always use git to create and push branches.
+### 5. Create Feature Branch
 
 ```bash
-# Ensure we're on main and up to date
 git checkout main
 git pull origin main
-
-# Create the feature branch
 git checkout -b blog/<slug>
 ```
 
-### 4. Create Blog Post File
+### 6. Generate Hero Image (If Replicate Available)
 
-Create the file at `src/content/blog/<slug>.md` with this frontmatter:
+If Replicate MCP tools are available, generate a hero image automatically:
+
+1. Create a prompt that matches the post topic and a modern tech aesthetic
+2. Use `replicate_create_models_predictions`:
+   - **model_owner**: `black-forest-labs`
+   - **model_name**: `flux-schnell`
+   - **Prefer**: `wait`
+   - **input**: `{"prompt": "<descriptive prompt>", "aspect_ratio": "16:9"}`
+
+3. Download the output image:
+   ```bash
+   curl -L -o src/assets/<slug>-header.webp "<output_url>"
+   ```
+
+### 7. Create Blog Post File
+
+Create `src/content/blog/<slug>.md`:
 
 ```markdown
 ---
 title: '<Title>'
 description: '<Description>'
-pubDate: '<Current Date in format: Mon DD YYYY>'
-heroImage: '../../assets/<slug>-header.webp'  # Only if hero image is generated
+pubDate: '<Current Date: Mon DD YYYY format>'
+heroImage: '../../assets/<slug>-header.webp'
 ---
 
-<Content goes here>
+<Well-structured content with headers, code examples, lists>
 ```
 
-**Date Format**: Use format like `Jan 20 2026`.
+**Content guidelines:**
+- Match the tone and style of existing posts in `src/content/blog/`
+- Use markdown: headers, lists, code blocks, links
+- Include working code examples where relevant
+- Break up with subheadings every 2-3 paragraphs
+- Link to official documentation
 
-**Content Style**: 
-- Use markdown with headers, lists, code blocks as appropriate
-- Write in a conversational, educator-friendly tone
-- Include code examples when relevant
-- Break up content with subheadings
-
-### 5. Generate Hero Image (Optional)
-
-If the Replicate MCP tools are available (check for `replicate_*` tools) and user wants a hero image:
-
-1. Use the `replicate_create_models_predictions` tool to generate an image:
-   - **model_owner**: `black-forest-labs`
-   - **model_name**: `flux-schnell`
-   - **input**: `{"prompt": "<your prompt>", "aspect_ratio": "16:9"}`
-   - **Prefer**: `wait` (to wait for the result)
-
-2. The prediction response will contain an `output` array with image URL(s)
-
-3. Download the generated image and save it to `src/assets/<slug>-header.webp`:
-   ```bash
-   curl -o src/assets/<slug>-header.webp "<output_url>"
-   ```
-
-4. Include the `heroImage` frontmatter field pointing to `../../assets/<slug>-header.webp`
-
-**Prompt Tips for Hero Images**:
-- Be specific about style, composition, and colors
-- Consider the blog's aesthetic (check `src/styles/global.css` for design cues)
-- Example: "Minimalist illustration of a robot writing code, soft gradients, modern tech aesthetic"
-
-### 6. Commit and Push with Git
-
-IMPORTANT: Always commit and push the branch to origin.
+### 8. Commit and Push
 
 ```bash
-# Stage the new files
 git add src/content/blog/<slug>.md
-git add src/assets/<slug>-header.webp  # If hero image was generated
-
-# Commit with a descriptive message
+git add src/assets/<slug>-header.webp
 git commit -m "Draft: <Title>"
-
-# Push the branch to origin (this triggers preview deployment)
 git push -u origin blog/<slug>
 ```
 
-### 7. Provide Preview URL
+### 9. Report to User
 
-After pushing, construct the preview URL using the `BLOG_PREVIEW_URL_PATTERN` environment variable.
+After pushing, tell the user:
 
-Replace `{branch}` with the branch name, converting `/` to `-`:
-- Branch: `blog/my-awesome-post`
-- URL branch segment: `blog-my-awesome-post`
-
-Tell the user:
 ```
-Your draft has been pushed to origin.
+Draft pushed to branch `blog/<slug>`
 
-Preview URL: https://<preview-url-pattern>/blog/<slug>
+Preview: https://<BLOG_PREVIEW_URL_PATTERN with {branch} replaced>/blog/<slug>
 
-Note: It may take 1-2 minutes for the preview deployment to complete.
+(Preview deployment takes 1-2 minutes)
 
-When you're ready to publish, just ask me to publish this post.
+Review the draft and let me know if you'd like any changes, or say "publish" when ready.
 ```
 
 ## Publishing a Draft
 
-When the user wants to publish a drafted post:
+When user says "publish" or "publish it" or similar:
 
-### 1. Identify the Draft
+### 1. Identify Current Branch
 
-If the user doesn't specify which draft, list available draft branches:
+Check if already on a blog branch, or find the most recent one:
 ```bash
-git fetch origin
+git branch --show-current
 git branch -r | grep 'origin/blog/'
 ```
 
-### 2. Merge to Main with Git
-
-IMPORTANT: Use git to merge and push.
+### 2. Merge and Push
 
 ```bash
-# Ensure main is up to date
 git checkout main
 git pull origin main
-
-# Merge the draft branch
 git merge origin/blog/<slug> --no-edit
-
-# Push to deploy to production
 git push origin main
 ```
 
-### 3. Clean Up Branch
+### 3. Clean Up
 
-After successful merge, offer to delete the draft branch:
 ```bash
-# Delete remote branch
 git push origin --delete blog/<slug>
-
-# Delete local branch
 git branch -d blog/<slug>
 ```
 
-### 4. Confirm Deployment
+### 4. Confirm
 
-Tell the user:
 ```
-Published! Your post has been merged to main and pushed.
+Published! Merged to main and pushed.
 
-Production URL: <BLOG_PRODUCTION_URL>/blog/<slug>
+Live at: <BLOG_PRODUCTION_URL>/blog/<slug>
 
-Deployment typically completes within 1-2 minutes.
+(Deployment takes 1-2 minutes)
 ```
 
-## File Locations Reference
+## Key Principles
+
+1. **Never ask questions** - Make reasonable decisions, user reviews the output
+2. **Study existing content first** - Read posts in `src/content/blog/` to match style
+3. **Always use webfetch** - For any technical topics, fetch current docs
+4. **Always use git** - Create branches, commit, push to origin
+5. **Always generate images** - If Replicate is available, create a hero image
+6. **Provide preview URL** - So user can review before publishing
+
+## File Locations
 
 - Blog posts: `src/content/blog/<slug>.md`
 - Hero images: `src/assets/<slug>-header.webp`
-- Site constants: `src/consts.ts`
-- Content schema: `src/content.config.ts`
+- Site config: `src/consts.ts`
 
 ## Frontmatter Schema
 
-Required fields:
-- `title` (string) - Post title
-- `description` (string) - Brief summary
-- `pubDate` (string) - Publication date like "Jan 20 2026"
+Required:
+- `title` (string)
+- `description` (string)
+- `pubDate` (string) - Format: `Jan 20 2026`
 
-Optional fields:
-- `heroImage` (string) - Relative path to hero image: `../../assets/<filename>.webp`
-- `updatedDate` (string) - Last updated date
+Optional:
+- `heroImage` (string) - `../../assets/<filename>.webp`
+- `updatedDate` (string)
 
-## Example Blog Post
-
-```markdown
----
-title: 'Building with AI APIs'
-description: 'A practical guide to integrating AI APIs into your projects without the complexity.'
-pubDate: 'Jan 22 2026'
-heroImage: '../../assets/building-with-ai-apis-header.webp'
----
-
-Introduction paragraph that hooks the reader...
-
-## Why This Matters
-
-Context and background for your topic.
-
-## Getting Started
-
-Step-by-step instructions with code examples:
-
-\`\`\`javascript
-const example = "code here";
-\`\`\`
-
-## Key Takeaways
-
-- Main point one
-- Main point two
-- Main point three
-
-## Conclusion
-
-Wrap up and call to action.
-```
-
-## Git Workflow Summary
+## Git Commands Reference
 
 **Draft:**
-1. `git checkout main && git pull origin main`
-2. `git checkout -b blog/<slug>`
-3. Create/edit files
-4. `git add . && git commit -m "Draft: <Title>"`
-5. `git push -u origin blog/<slug>`
+```bash
+git checkout main && git pull origin main
+git checkout -b blog/<slug>
+# ... create files ...
+git add .
+git commit -m "Draft: <Title>"
+git push -u origin blog/<slug>
+```
 
 **Publish:**
-1. `git checkout main && git pull origin main`
-2. `git merge origin/blog/<slug> --no-edit`
-3. `git push origin main`
-4. `git push origin --delete blog/<slug>` (cleanup)
+```bash
+git checkout main && git pull origin main
+git merge origin/blog/<slug> --no-edit
+git push origin main
+git push origin --delete blog/<slug>
+git branch -d blog/<slug>
+```
