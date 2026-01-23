@@ -5,6 +5,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "craigsdennis-blog",
+  "preview_urls": true,
   "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2026-01-20",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
