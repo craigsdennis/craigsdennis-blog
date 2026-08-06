@@ -1,22 +1,19 @@
 ---
 title: 'Replicate is Rad'
-description: 'Exploring the awesomeness of Replicate for running AI models in the cloud. Image generation, audio, video, and more - all with a simple API.'
+description: 'Running image, audio, video, and vision models through Replicate, with Flux Schnell, JavaScript, and an 80s BMX poster.'
 pubDate: 'Jan 20 2026'
 heroImage: '../../assets/replicate-is-rad-header.webp'
+heroAlt: 'An 80s BMX movie poster with a rider doing a trick beneath neon RAD typography'
+heroCaption: 'Generated with Flux Schnell from the concrete prompt below.'
 ---
 
 If you haven't checked out [Replicate](https://replicate.com) yet, you're missing out on one of the most developer-friendly ways to run AI models. It's like having a massive arcade of AI models at your fingertips, and you only pay for what you play.
 
 ## What Makes Replicate Rad?
 
-Replicate takes the pain out of running AI models. No GPU provisioning, no Docker nightmares, no dependency hell. You just call an API and get results. It's the kind of developer experience that makes you want to high-five your computer.
+Replicate runs the model infrastructure for you, so you call an API and get results. It's the kind of developer experience that makes you want to high-five your computer.
 
-Here's why I keep coming back:
-
-- **Zero infrastructure** - No servers to manage, no GPUs to provision
-- **Pay-per-use** - Only pay for the compute time you actually use
-- **Massive model library** - Thousands of open-source models ready to run
-- **Simple API** - A few lines of code and you're generating images, audio, or video
+I keep coming back because the API is simple, pricing is pay-per-use, and thousands of open-source models are ready to run.
 
 ## Image Generation with Flux
 
@@ -33,32 +30,13 @@ Flux is my go-to for quick image generation. It's fast, produces high-quality re
 
 ### Other Image Models Worth Checking Out
 
-- **[SDXL](https://replicate.com/stability-ai/sdxl)** - The classic Stable Diffusion XL, great for general-purpose image generation
-- **[Flux Pro](https://replicate.com/black-forest-labs/flux-pro)** - Higher quality version of Flux for production use
-- **[Recraft V3](https://replicate.com/recraft-ai/recraft-v3)** - Excellent for design assets and illustrations
-- **[Ideogram](https://replicate.com/ideogram-ai/ideogram-v2-turbo)** - Another strong option for text-in-image generation
+- **[Flux Pro](https://replicate.com/black-forest-labs/flux-pro)** for a higher quality version of Flux for production use
+- **[Recraft V3](https://replicate.com/recraft-ai/recraft-v3)** for design assets and illustrations
+- **[Ideogram](https://replicate.com/ideogram-ai/ideogram-v2-turbo)** for another text-in-image option
 
 ## Beyond Images
 
-Replicate isn't just for images. The model library covers basically every AI use case:
-
-### Audio & Music
-
-- **[MusicGen](https://replicate.com/meta/musicgen)** - Generate music from text descriptions
-- **[Bark](https://replicate.com/suno-ai/bark)** - Text-to-speech with incredible expressiveness
-- **[Whisper](https://replicate.com/openai/whisper)** - OpenAI's speech recognition model
-
-### Video
-
-- **[Stable Video Diffusion](https://replicate.com/stability-ai/stable-video-diffusion)** - Turn images into short videos
-- **[Mochi](https://replicate.com/genmo/mochi-1-preview)** - Text-to-video generation
-- **[LTX Video](https://replicate.com/lightricks/ltx-video)** - Fast video generation
-
-### Language & Vision
-
-- **[LLaVA](https://replicate.com/yorickvp/llava-13b)** - Vision-language model for understanding images
-- **[Llama](https://replicate.com/meta/meta-llama-3-70b-instruct)** - Meta's open-source LLM
-- **[CodeLlama](https://replicate.com/meta/codellama-70b-instruct)** - Code-focused language model
+The model library also includes [Whisper](https://replicate.com/openai/whisper) for speech recognition, [Stable Video Diffusion](https://replicate.com/stability-ai/stable-video-diffusion) for turning images into short videos, and [LLaVA](https://replicate.com/yorickvp/llava-13b) for understanding images.
 
 ## The Developer Experience
 
@@ -69,25 +47,27 @@ import Replicate from "replicate";
 
 const replicate = new Replicate();
 
-const output = await replicate.run("black-forest-labs/flux-schnell", {
-  input: {
-    prompt: "a robot hand giving a thumbs up",
-    aspect_ratio: "1:1"
-  }
-});
+console.log("Generating...");
 
-console.log(output);
+try {
+  const output = await replicate.run("black-forest-labs/flux-schnell", {
+    input: {
+      prompt: "a robot hand giving a thumbs up",
+      aspect_ratio: "1:1"
+    }
+  });
+
+  console.log("Generated:", output);
+} catch (error) {
+  console.error("Generation failed:", error);
+}
 ```
-
-![Robot hand giving thumbs up](../../assets/replicate-robot-hand.webp)
-
-That's it. No complex setup, no model weights to download, no CUDA version conflicts. Just results.
 
 ## Pricing That Makes Sense
 
-Replicate's pricing model is refreshingly simple - you pay for compute time. Flux Schnell runs at about $0.003 per image. That means you can generate hundreds of images for a dollar while experimenting.
+You pay for compute time. Flux Schnell runs at about $0.003 per image. That means you can generate hundreds of images for a dollar while experimenting.
 
-For production use, they offer reserved capacity and volume discounts. But for tinkering, learning, and building prototypes, the pay-as-you-go model is perfect.
+For production use, they offer reserved capacity and volume discounts. For tinkering, learning, and building prototypes, the pay-as-you-go model is perfect.
 
 ## Get Started
 
@@ -98,14 +78,8 @@ If you want to try Replicate:
 3. Install the SDK: `npm install replicate`
 4. Start building!
 
-The [documentation](https://replicate.com/docs) is excellent, and browsing the [model explore page](https://replicate.com/explore) is genuinely fun - there's always some wild new model to try.
+The [documentation](https://replicate.com/docs) covers the API, and the [model explore page](https://replicate.com/explore) is there when you want another model to try.
 
-## Wrapping Up
-
-Replicate has become an essential tool in my AI toolkit. It lets me focus on building cool stuff instead of managing infrastructure. Whether you're prototyping an idea, building a product, or just having fun with AI, it's worth checking out.
+*All images in this post were generated using Replicate. The header used [Flux Schnell](https://replicate.com/black-forest-labs/flux-schnell) with the prompt above.*
 
 Now if you'll excuse me, I have more 80s BMX poster art to generate.
-
----
-
-*All images in this post were generated using Replicate. The header used [Flux Schnell](https://replicate.com/black-forest-labs/flux-schnell) with the prompt described above.*

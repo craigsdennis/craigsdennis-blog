@@ -9,7 +9,7 @@ import { SITE_AUTHOR } from '../consts';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, heroAlt, heroCaption } = Astro.props;
 ---
 
 <html lang="en">
@@ -47,15 +47,16 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				
 				<!-- Hero Image -->
 				{heroImage && (
-					<div class="hero-image">
+					<figure class="hero-image">
 						<Image 
 							width={1200} 
 							height={600} 
 							src={heroImage} 
-							alt=""
+							alt={heroAlt ?? ''}
 							loading="eager"
 						/>
-					</div>
+						{heroCaption && <figcaption>{heroCaption}</figcaption>}
+					</figure>
 				)}
 				
 				<!-- Article Content -->
@@ -175,7 +176,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 	
 	/* Hero Image */
 	.hero-image {
-		margin-bottom: var(--space-xl);
+		margin: 0 0 var(--space-xl);
 		border-radius: 12px;
 		overflow: hidden;
 		border: 1px solid var(--border-color);
@@ -187,6 +188,14 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		display: block;
 		border-radius: 0;
 	}
+
+	.hero-image figcaption {
+		padding: var(--space-sm) var(--space-md);
+		border-top: 1px solid var(--border-subtle);
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+	}
 	
 	/* Prose Content */
 	.prose {
@@ -197,8 +206,6 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 	.prose :global(h2) {
 		margin-top: var(--space-xl);
 		margin-bottom: var(--space-md);
-		padding-bottom: var(--space-sm);
-		border-bottom: 1px solid var(--border-subtle);
 	}
 	
 	.prose :global(h3) {
